@@ -15,9 +15,9 @@ def clone_repository(github_url: str) -> str:
     print(f"Cloning {github_url} into {temp_dir}...")
     
     try:
-        # Run the git clone command
+        # Run the git clone command with --depth 1 to only download the latest commit (saves massive time and space)
         subprocess.run(
-            ["git", "clone", github_url, temp_dir],
+            ["git", "clone", "--depth", "1", github_url, temp_dir],
             check=True,
             stdout=subprocess.DEVNULL, # Hide normal git output
             stderr=subprocess.PIPE     # Capture errors if it fails

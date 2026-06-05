@@ -25,6 +25,10 @@ def chunk_codebase(repo_path: str):
     documents = loader.load()
     print(f"Successfully loaded {len(documents)} code files.")
 
+    # SAFETY CHECK: Prevent massive repositories from draining the OpenAI API credits
+    if len(documents) > 1000:
+        raise Exception(f"Repository too large ({len(documents)} files). Maximum allowed is 1000 files to protect API credits.")
+
     # Step 2: The Splitter
     # Using RecursiveCharacterTextSplitter, which tries to split on newlines and spaces 
     # instead of cutting words or functions in half blindly.
