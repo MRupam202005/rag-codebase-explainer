@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 from core.github_loader import clone_repository, cleanup_repository
 from core.chunker import chunk_codebase
+from core.vector_store import store_chunks_in_qdrant
 
 load_dotenv()
 
@@ -50,8 +51,10 @@ def start_worker():
                     # Step 2: Chunk the codebase
                     chunks = chunk_codebase(repo_path)
                     
-                    # TODO: Step 3: Embed with OpenAI, Save to Pinecone
-                    print("Processing complete. Ready for Vector DB!")
+                    # Step 3: Embed with OpenAI, Save to Qdrant
+                    store_chunks_in_qdrant(chunks, github_url)
+                    
+                    print("Processing complete. Safely stored in Qdrant!")
                     
                 except Exception as e:
                     print(f"Failed to process {github_url}: {e}")
