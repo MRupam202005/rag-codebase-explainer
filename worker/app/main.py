@@ -1,7 +1,12 @@
+import time
 import os
+# pyrefly: ignore [missing-import]
 import redis
 import json
+# pyrefly: ignore [missing-import]
 from dotenv import load_dotenv
+
+from core.github_loader import clone_repository, cleanup_repository
 
 load_dotenv()
 
@@ -36,15 +41,26 @@ def start_worker():
                 print(f"\n[JOB RECEIVED] ID: {job_id}")
                 print(f"Target URL: {github_url}")
                 
-                # TODO: Download repo, Chunk code, Embed with OpenAI, Save to Pinecone
-                print("Processing... (pretending to do heavy AI work)")
+                repo_path = None
+                try:
+                    # Step 1: Download the repository
+                    repo_path = clone_repository(github_url)
+                    
+                    # TODO: Step 2: Chunk code, Embed with OpenAI, Save to Pinecone
+                    print("Processing... (pretending to parse files)")
+                    
+                except Exception as e:
+                    print(f"Failed to process {github_url}: {e}")
+                finally:
+                    # Always clean up the files so we don't fill up the hard drive!
+                    if repo_path:
+                        cleanup_repository(repo_path)
                 
                 print(f"[JOB COMPLETE] ID: {job_id}")
 
         except Exception as e:
             print(f"Error processing job: {e}")
             # Wait a moment before retrying if the connection drops
-            import time
             time.sleep(2)
 
 if __name__ == "__main__":
