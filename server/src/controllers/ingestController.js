@@ -1,6 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-
-// We will import our Redis client here later!
+import redisClient from "../config/redis.js";
 
 export const ingestRepository = async (req, res) => {
     const { githubUrl } = req.body;
@@ -17,8 +16,8 @@ export const ingestRepository = async (req, res) => {
         console.log("Job ID: ", jobId);
         console.log("Github URL: ", githubUrl);
 
-        // 3. TODO : Push this Job to the Redis Queue for the Python Worker!
-        // await redis.lPush("ingest_queue", JSON.stringify({ jobId, githubUrl }));
+        // 3. Push this Job to the Redis Queue for the Python Worker!
+        await redisClient.lPush("ingest_queue", JSON.stringify({ jobId, githubUrl }));
 
         // 4. Immediately return a success response with the Job ID
         res.status(202).json({
