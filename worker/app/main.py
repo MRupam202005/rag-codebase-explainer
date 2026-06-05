@@ -7,6 +7,7 @@ import json
 from dotenv import load_dotenv
 
 from core.github_loader import clone_repository, cleanup_repository
+from core.chunker import chunk_codebase
 
 load_dotenv()
 
@@ -46,8 +47,11 @@ def start_worker():
                     # Step 1: Download the repository
                     repo_path = clone_repository(github_url)
                     
-                    # TODO: Step 2: Chunk code, Embed with OpenAI, Save to Pinecone
-                    print("Processing... (pretending to parse files)")
+                    # Step 2: Chunk the codebase
+                    chunks = chunk_codebase(repo_path)
+                    
+                    # TODO: Step 3: Embed with OpenAI, Save to Pinecone
+                    print("Processing complete. Ready for Vector DB!")
                     
                 except Exception as e:
                     print(f"Failed to process {github_url}: {e}")
