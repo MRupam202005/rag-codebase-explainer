@@ -1,0 +1,7 @@
+langchain==0.1.12
+langchain-openai==0.0.8
+pinecone-client==3.2.2
+redis==5.0.3
+python-dotenv==1.0.1
+fastapi==0.110.0
+uvicorn==0.28.0
