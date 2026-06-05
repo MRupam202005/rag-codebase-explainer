@@ -5,9 +5,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Connect to Redis (Notice the port is the same one our Node.js server uses)
+# Connect to Redis with health checks to prevent socket timeouts
 redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
-redis_client = redis.Redis.from_url(redis_url, decode_responses=True)
+redis_client = redis.Redis.from_url(
+    redis_url, 
+    decode_responses=True,
+    health_check_interval=30
+)
 
 def start_worker():
     print("⛑️🧑🏭🧟 Python Worker is starting up...")
@@ -18,9 +22,9 @@ def start_worker():
     while True:
         try:
             # BLPOP = Blocking Left Pop. 
-            # It waits until an item is added to the queue, then pops it off.
-            # Timeout=0 means it will wait forever without disconnecting.
-            result = redis_client.blpop("ingest_queue", timeout=0)
+            # It waits up to 5 seconds, then returns None if empty.
+            # We use 5 instead of 0 to prevent the TCP socket from timing out silently.
+            result = redis_client.blpop("ingest_queue", timeout=5)
             
             if result:
                 queue_name, job_data_string = result
@@ -39,6 +43,9 @@ def start_worker():
 
         except Exception as e:
             print(f"Error processing job: {e}")
+            # Wait a moment before retrying if the connection drops
+            import time
+            time.sleep(2)
 
 if __name__ == "__main__":
     start_worker()
