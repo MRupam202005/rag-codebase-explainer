@@ -1,4 +1,5 @@
 import os
+import stat
 import shutil
 import subprocess
 from uuid import uuid4
@@ -27,14 +28,18 @@ def clone_repository(github_url: str) -> str:
         print(f"Failed to clone repository: {e.stderr.decode()}")
         raise Exception(f"Failed to clone repository: {github_url}")
 
+def remove_readonly(func, path, _):
+    """Clear the readonly bit and reattempt the removal."""
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
+
 def cleanup_repository(repo_path: str):
     """
     Deletes the temporary repository directory to save disk space.
     """
     if os.path.exists(repo_path):
         print(f"Cleaning up {repo_path}...")
-        # On Windows, sometimes git leaves files read-only. 
-        # For a robust cleanup, shutil.rmtree might need an error handler,
-        # but for this step, a standard rmtree works fine.
-        shutil.rmtree(repo_path, ignore_errors=True)
+        # On Windows, Git creates read-only files in the .git folder.
+        # We must use an 'onerror' handler to change permissions before deleting.
+        shutil.rmtree(repo_path, onerror=remove_readonly)
         print("Cleanup complete.")
