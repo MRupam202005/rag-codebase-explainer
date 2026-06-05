@@ -16,14 +16,22 @@ export const ingestRepository = async (req, res) => {
         console.log("Job ID: ", jobId);
         console.log("Github URL: ", githubUrl);
 
-        // 3. Push this Job to the Redis Queue for the Python Worker!
+        // 3. Create a status key in Redis that expires in 24 hours (86400 seconds)
+        // This allows the frontend to poll the status of this specific job.
+        await redisClient.set(
+            `job:${jobId}`, 
+            JSON.stringify({ status: "processing", url: githubUrl }),
+            { EX: 86400 } 
+        );
+
+        // 4. Push this Job to the Redis Queue for the Python Worker!
         await redisClient.lPush("ingest_queue", JSON.stringify({ jobId, githubUrl }));
 
-        // 4. Immediately return a success response with the Job ID
+        // 5. Immediately return a success response with the Job ID
         res.status(202).json({
             message: "Repository submitted for processing.",
             jobId: jobId,
-            status: "pending"
+            status: "processing"
         });
 
     } catch (error) {

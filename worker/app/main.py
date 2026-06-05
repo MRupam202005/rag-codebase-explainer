@@ -54,10 +54,22 @@ def start_worker():
                     # Step 3: Embed with OpenAI, Save to Qdrant
                     store_chunks_in_qdrant(chunks, github_url)
                     
+                    # Step 4: Tell Node.js we are finished!
+                    redis_client.set(f"job:{job_id}", json.dumps({
+                        "status": "completed",
+                        "url": github_url
+                    }))
+                    
                     print("Processing complete. Safely stored in Qdrant!")
                     
                 except Exception as e:
                     print(f"Failed to process {github_url}: {e}")
+                    # Tell Node.js it failed
+                    redis_client.set(f"job:{job_id}", json.dumps({
+                        "status": "failed",
+                        "error": str(e),
+                        "url": github_url
+                    }))
                 finally:
                     # Always clean up the files so we don't fill up the hard drive!
                     if repo_path:
