@@ -1,3 +1,5 @@
+import ChatMessage from "../models/ChatMessage.js";
+
 export const chatWithCodebase = async (req, res) => {
     const { githubUrl, question } = req.body;
 
@@ -6,6 +8,13 @@ export const chatWithCodebase = async (req, res) => {
     }
 
     try {
+        // SAVE USER MESSAGE TO MONGODB
+        await ChatMessage.create({
+            repositoryUrl: githubUrl,
+            role: 'user',
+            content: question
+        });
+
         // We act as the API Gateway! Forward the request to our internal Python FastAPI server.
         // We use the built-in fetch API (available in modern Node.js).
         const pythonResponse = await fetch("http://127.0.0.1:8000/chat", {    // why it is "http://127.0.0.1:8000/chat"? ans: because we are using FastAPI server at port 8000 and the chat endpoint is /chat
@@ -23,6 +32,13 @@ export const chatWithCodebase = async (req, res) => {
 
         const data = await pythonResponse.json();
         
+        // SAVE AI RESPONSE TO MONGODB
+        await ChatMessage.create({
+            repositoryUrl: githubUrl,
+            role: 'assistant',
+            content: data.answer
+        });
+
         // Send the answer back to the React frontend
         res.status(200).json(data);
 

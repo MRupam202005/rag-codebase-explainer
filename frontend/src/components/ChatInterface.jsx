@@ -14,6 +14,22 @@ export default function ChatInterface({ githubUrl }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Fetch chat history on mount
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/chat/history?githubUrl=${encodeURIComponent(githubUrl)}`);
+        const data = await res.json();
+        if (data.history && data.history.length > 0) {
+          setMessages(data.history);
+        }
+      } catch (err) {
+        console.error("Failed to load chat history", err);
+      }
+    };
+    fetchHistory();
+  }, [githubUrl]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;

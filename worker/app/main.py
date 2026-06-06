@@ -62,6 +62,9 @@ def start_worker():
                         "url": github_url
                     }))
                     
+                    # CACHE UPDATE: Mark this repo as processed globally so we don't duplicate it later!
+                    redis_client.hset("processed_repos", github_url, "true")
+                    
                     print("Processing complete. Safely stored in Qdrant!")
                     
                 except Exception as e:
