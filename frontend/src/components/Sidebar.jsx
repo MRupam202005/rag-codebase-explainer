@@ -38,9 +38,11 @@ export default function Sidebar() {
 
   return (
     <div className="glass-panel sidebar-panel" style={{ 
-      width: '300px', 
+      width: '100%', 
+      minWidth: '280px',
+      maxWidth: '400px',
+      flex: '0 0 33%', // Roughly 1/3 of the screen
       height: 'calc(100vh - 140px)', // Fixed height based on viewport
-      flex: 1,
       marginTop: '1rem',
       padding: '1.5rem',
       display: 'flex',

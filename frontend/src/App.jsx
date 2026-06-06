@@ -87,9 +87,12 @@ function App() {
             {/* Protected Routes */}
             <Route path="/" element={
               user ? (
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <LandingHero onStartIngestion={startIngestion} />
-                </div>
+                <>
+                  <Sidebar />
+                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <LandingHero onStartIngestion={startIngestion} />
+                  </div>
+                </>
               ) : <Navigate to="/login" />
             } />
             
@@ -114,6 +117,30 @@ function App() {
           </Routes>
         )}
       </main>
+
+      {/* Footer */}
+      <footer style={{ 
+        marginTop: 'auto', 
+        padding: '2rem 0 1rem 0', 
+        textAlign: 'center', 
+        color: 'var(--text-secondary)',
+        fontSize: '0.9rem',
+        borderTop: '1px solid var(--border-color)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '0.5rem'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ width: '20px', height: '20px', background: 'var(--accent-color)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '10px' }}>
+            RAG
+          </div>
+          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Codebase Explainer</span>
+        </div>
+        <p>
+          Crafted with passion by <strong>Rupam</strong>.
+        </p>
+      </footer>
     </>
   );
 }

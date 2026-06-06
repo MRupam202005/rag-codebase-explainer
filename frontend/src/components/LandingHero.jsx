@@ -60,7 +60,7 @@ export default function LandingHero({ onStartIngestion }) {
       </div>
 
       {/* URL Input Form */}
-      <form onSubmit={handleSubmit} style={{ maxWidth: '500px', margin: '0 auto', display: 'flex', gap: '0.5rem' }}>
+      <form onSubmit={handleSubmit} style={{ maxWidth: '500px', margin: '0 auto 2rem auto', display: 'flex', gap: '0.5rem' }}>
         <input 
           type="text" 
           placeholder="https://github.com/expressjs/express" 
@@ -72,6 +72,27 @@ export default function LandingHero({ onStartIngestion }) {
           Let's Try <ArrowRight size={16} />
         </button>
       </form>
+
+      {/* Brief Documentation / Explanation */}
+      <div style={{ 
+          background: 'rgba(255,255,255,0.4)', 
+          padding: '1.5rem', 
+          borderRadius: '12px', 
+          border: '1px solid var(--border-color)', 
+          textAlign: 'left',
+          marginTop: '3rem' 
+      }}>
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.75rem', color: 'var(--text-primary)' }}>How It Works</h3>
+        <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '0.5rem' }}>
+          <strong>RAG Codebase Explainer</strong> acts as your intelligent pair-programmer. When you submit a GitHub repository:
+        </p>
+        <ul style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', lineHeight: 1.6, paddingLeft: '1.5rem', marginBottom: '0' }}>
+          <li>The backend automatically clones the repository and extracts the raw source code.</li>
+          <li>Code files are split into semantic chunks and embedded using advanced language models.</li>
+          <li>Embeddings are securely stored in a high-performance <strong>Qdrant Vector Database</strong>.</li>
+          <li>You can then chat with the codebase in real-time, asking complex questions about architecture, logic, and dependencies.</li>
+        </ul>
+      </div>
     </div>
   );
 }

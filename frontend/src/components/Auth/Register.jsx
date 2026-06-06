@@ -86,6 +86,21 @@ export default function Register() {
                 <p style={{ marginTop: '2rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
                     Already have an account? <Link to="/login" style={{ color: 'var(--accent-color)', fontWeight: 600, textDecoration: 'none' }}>Sign in here</Link>
                 </p>
+                
+                {/* Brief Documentation / Explanation */}
+                <div style={{ 
+                    background: 'rgba(255,255,255,0.4)', 
+                    padding: '1.25rem', 
+                    borderRadius: '12px', 
+                    border: '1px solid var(--border-color)', 
+                    textAlign: 'left',
+                    marginTop: '2rem' 
+                }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>What is this?</h3>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '0' }}>
+                        The <strong>RAG Codebase Explainer</strong> acts as your intelligent pair-programmer. Submit a GitHub URL, and our system will ingest, chunk, and embed the code using advanced language models. You can then chat with the codebase in real-time to understand its architecture and logic.
+                    </p>
+                </div>
             </div>
         </div>
     );
