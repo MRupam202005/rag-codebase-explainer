@@ -1,5 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, User, Bot, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 export default function ChatInterface({ githubUrl }) {
   const [messages, setMessages] = useState([
@@ -97,10 +100,39 @@ export default function ChatInterface({ githubUrl }) {
               borderRadius: '12px',
               borderTopLeftRadius: msg.role === 'user' ? '0' : '12px',
               maxWidth: '85%',
-              lineHeight: 1.6
+              lineHeight: 1.6,
+              width: '100%',
+              overflowX: 'auto'
             }}>
-              {/* Note: In a production app, we would use react-markdown here to render code blocks properly */}
-              <p style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</p>
+              {msg.role === 'user' ? (
+                <p style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{msg.content}</p>
+              ) : (
+                <div className="markdown-body" style={{ fontSize: '0.95rem' }}>
+                  <ReactMarkdown
+                    components={{
+                      code({node, inline, className, children, ...props}) {
+                        const match = /language-(\w+)/.exec(className || '');
+                        return !inline && match ? (
+                          <SyntaxHighlighter
+                            {...props}
+                            children={String(children).replace(/\n$/, '')}
+                            style={atomDark}
+                            language={match[1]}
+                            PreTag="div"
+                            customStyle={{ borderRadius: '8px', padding: '1rem', margin: '1rem 0' }}
+                          />
+                        ) : (
+                          <code {...props} className={className} style={{ background: 'rgba(0,0,0,0.05)', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.9em', color: 'var(--accent-color)' }}>
+                            {children}
+                          </code>
+                        )
+                      }
+                    }}
+                  >
+                    {msg.content}
+                  </ReactMarkdown>
+                </div>
+              )}
             </div>
           </div>
         ))}
