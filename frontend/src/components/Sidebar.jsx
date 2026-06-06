@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { GitBranch, Clock } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import { API_BASE_URL } from '../config/api';
 
 export default function Sidebar() {
   const [repositories, setRepositories] = useState([]);
@@ -13,7 +14,7 @@ export default function Sidebar() {
   useEffect(() => {
     const fetchRepos = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/repositories', {
+        const res = await fetch(`${API_BASE_URL}/api/repositories`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

@@ -35,7 +35,8 @@ export const chatWithCodebase = asyncHandler(async (req, res) => {
         res.setHeader('Connection', 'keep-alive');
 
         // Forward to Python's Streaming Endpoint
-        const pythonResponse = await fetch("http://127.0.0.1:8000/chat", {
+        const pythonUrl = process.env.PYTHON_WORKER_URL || "http://127.0.0.1:8000";
+        const pythonResponse = await fetch(`${pythonUrl}/chat`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

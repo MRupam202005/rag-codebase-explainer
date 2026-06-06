@@ -8,6 +8,7 @@ import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import VerifyEmail from './components/Auth/VerifyEmail';
 import { AuthContext } from './context/AuthContext';
+import { API_BASE_URL } from './config/api';
 import toast from 'react-hot-toast';
 
 function App() {
@@ -17,7 +18,7 @@ function App() {
 
   const startIngestion = async (url) => {
     try {
-      const res = await fetch('http://localhost:5000/api/ingest-repository', {
+      const res = await fetch(`${API_BASE_URL}/api/ingest-repository`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

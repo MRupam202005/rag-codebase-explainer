@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { Mail, Lock, ArrowRight, Code2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { API_BASE_URL } from '../../config/api';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -13,7 +14,7 @@ export default function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await fetch('http://localhost:5000/api/auth/login', {
+            const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })

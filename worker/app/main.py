@@ -17,7 +17,9 @@ redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
 redis_client = redis.Redis.from_url(
     redis_url, 
     decode_responses=True,
-    health_check_interval=30
+    health_check_interval=30,
+    socket_keepalive=True,
+    retry_on_timeout=True
 )
 
 def start_worker():
@@ -82,9 +84,12 @@ def start_worker():
                 
                 print(f"[JOB COMPLETE] ID: {job_id}")
 
+        except (redis.exceptions.TimeoutError, redis.exceptions.ConnectionError) as e:
+            print(f"[REDIS CONNECTION ERROR] {e}. Attempting to reconnect...")
+            time.sleep(5)
         except Exception as e:
             print(f"Error processing job: {e}")
-            # Wait a moment before retrying if the connection drops
+            # Wait a moment before retrying
             time.sleep(2)
 
 if __name__ == "__main__":

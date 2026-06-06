@@ -1,33 +1,29 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import { API_BASE_URL } from '../../config/api';
 
 export default function VerifyEmail() {
     const { token } = useParams();
     const [status, setStatus] = useState('Verifying your email...');
-    const { login } = useContext(AuthContext);
     const navigate = useNavigate();
 
     useEffect(() => {
         const verify = async () => {
             try {
-                const res = await fetch(`http://localhost:5000/api/auth/verify/${token}`);
-                const data = await res.json();
+                const res = await fetch(`${API_BASE_URL}/api/auth/verify/${token}`);
+                const responseData = await res.json();
 
                 if (!res.ok) {
-                    throw new Error(data.error || 'Verification failed');
+                    throw new Error(responseData.message || 'Verification failed');
                 }
 
-                setStatus('Email verified successfully! Logging you in...');
+                setStatus('Email verified successfully! Redirecting to login...');
                 toast.success('Account verified!');
                 
-                // Log them in automatically
-                login(data.user, data.token);
-                
-                // Redirect to dashboard after a short delay
+                // Redirect to login after a short delay
                 setTimeout(() => {
-                    navigate('/');
+                    navigate('/login');
                 }, 1500);
 
             } catch (err) {

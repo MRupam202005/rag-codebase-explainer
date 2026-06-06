@@ -5,6 +5,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { AuthContext } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import { API_BASE_URL } from '../config/api';
 
 export default function ChatInterface({ githubUrl }) {
   const [messages, setMessages] = useState([
@@ -24,7 +25,7 @@ export default function ChatInterface({ githubUrl }) {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/chat/history?githubUrl=${encodeURIComponent(githubUrl)}`, {
+        const res = await fetch(`${API_BASE_URL}/api/chat/history?githubUrl=${encodeURIComponent(githubUrl)}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -58,7 +59,7 @@ export default function ChatInterface({ githubUrl }) {
     setIsLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/chat', {
+      const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

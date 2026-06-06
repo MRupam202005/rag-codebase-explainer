@@ -48,7 +48,8 @@ const registerUser = asyncHandler(async (req, res) => {
         return res.status(400).json(new ApiResponse(400, {}, "Something went wrong while registering the user"));
     } 
 
-    const verificationUrl = `http://localhost:5000/api/auth/verify/${verifyToken}`;
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:5000";
+    const verificationUrl = `${backendUrl}/api/auth/verify/${verifyToken}`;
     const message = `
         <h1>Email Verification</h1>
         <p>Please go to this link to verify your email address:</p>
@@ -123,9 +124,9 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
     const options = {
-        httpOnly: true,  // because we don't want to access the cookie from the frontend (XSS attack)
-        secure: true,    // because we are using https
-        sameSite: "strict", // CSRF(Cross-Site Request Forgery) attack protection
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
         maxAge: 1000 * 60 * 60 * 24
     }
 
@@ -158,7 +159,8 @@ const logoutUser = asyncHandler(async (req, res) => {
 
     const options = {
         httpOnly: true,
-        secure: true
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict"
     }
 
     res
@@ -193,7 +195,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
         const options = {
             httpOnly: true,
-            secure: true
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "strict"
         };
 
         const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);

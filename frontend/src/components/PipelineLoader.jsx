@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
+import { API_BASE_URL } from '../config/api';
 
 export default function PipelineLoader({ jobId, onComplete }) {
   const [status, setStatus] = useState('processing');
@@ -20,7 +21,7 @@ export default function PipelineLoader({ jobId, onComplete }) {
     
     const checkStatus = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/job/${jobId}`, {
+        const res = await fetch(`${API_BASE_URL}/api/job/${jobId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
