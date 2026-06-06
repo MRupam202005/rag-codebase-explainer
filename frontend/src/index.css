@@ -36,10 +36,26 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 2rem;
-  max-width: 1000px;
-  margin: 0 auto;
+  padding: 1rem 2rem;
   width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  #root {
+    padding: 1rem;
+  }
+  
+  .main-content {
+    flex-direction: column !important;
+  }
+  
+  .sidebar-panel {
+    width: 100% !important;
+    min-height: auto !important;
+    max-height: 250px;
+  }
 }
 
 /* Glassmorphic Container Utility */

@@ -90,7 +90,8 @@ export default function ChatInterface({ githubUrl }) {
     <div className="glass-panel" style={{ 
       display: 'flex', 
       flexDirection: 'column', 
-      height: '80vh', 
+      height: 'calc(100vh - 140px)', // Fixed height based on viewport
+      flex: 1,
       marginTop: '1rem',
       padding: '0',
       overflow: 'hidden'

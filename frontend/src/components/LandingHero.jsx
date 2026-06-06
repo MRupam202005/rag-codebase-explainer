@@ -12,7 +12,7 @@ export default function LandingHero({ onStartIngestion }) {
   };
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '4rem' }}>
+    <div style={{ textAlign: 'center', width: '100%', maxWidth: '800px' }}>
       <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', fontWeight: 600, letterSpacing: '-0.03em' }}>
         Talk to any Codebase.
       </h1>

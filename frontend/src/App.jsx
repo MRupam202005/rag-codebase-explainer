@@ -53,9 +53,13 @@ function App() {
       </nav>
 
       {/* Main Content Area */}
-      <main style={{ flex: 1, display: 'flex', gap: '1.5rem', alignItems: 'stretch' }}>
+      <main className="main-content" style={{ flex: 1, display: 'flex', gap: '1.5rem', alignItems: 'stretch' }}>
         <Routes>
-          <Route path="/" element={<LandingHero onStartIngestion={startIngestion} />} />
+          <Route path="/" element={
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <LandingHero onStartIngestion={startIngestion} />
+            </div>
+          } />
           
           <Route path="/loading/:id" element={
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>

@@ -21,9 +21,10 @@ export default function Sidebar() {
   }, []);
 
   return (
-    <div className="glass-panel" style={{ 
+    <div className="glass-panel sidebar-panel" style={{ 
       width: '300px', 
-      height: '80vh', 
+      height: 'calc(100vh - 140px)', // Fixed height based on viewport
+      flex: 1,
       marginTop: '1rem',
       padding: '1.5rem',
       display: 'flex',
