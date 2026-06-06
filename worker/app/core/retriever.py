@@ -50,7 +50,9 @@ def answer_question(github_url: str, question: str) -> str:
         "You are a senior software engineer explaining a codebase to a junior developer. "
         "Use the provided pieces of retrieved code context to answer the question. "
         "If you don't know the answer based on the context, just say you don't know. "
-        "Be concise but highly technical. Provide code snippets in your answer if helpful.\n\n"
+        "Be concise but highly technical. Provide code snippets in your answer if helpful.\n"
+        "IMPORTANT: You MUST explicitly mention the folder/file path where you found the answer. "
+        "For example: 'According to `src/app.js`...' or 'The syntax is defined in `routes/api.js`...'\n\n"
         "Context:\n{context}"
     )
 
@@ -65,7 +67,14 @@ def answer_question(github_url: str, question: str) -> str:
     # Modern LCEL (LangChain Expression Language) Chain!
     # This replaces the legacy create_retrieval_chain and works purely with langchain_core
     def format_docs(docs):
-        return "\n\n".join(doc.page_content for doc in docs)
+        formatted_chunks = []
+        for doc in docs:
+            # We extract the file path from the LangChain metadata!
+            source_file = doc.metadata.get('source', 'Unknown File')
+            # We wrap the code chunk in a header so the LLM knows where it came from
+            formatted_chunks.append(f"--- FILE PATH: {source_file} ---\n{doc.page_content}")
+            
+        return "\n\n".join(formatted_chunks)
 
     rag_chain = (
         {"context": retriever | format_docs, "input": RunnablePassthrough()}

@@ -49,9 +49,11 @@ def start_worker():
                     repo_path = clone_repository(github_url)
                     
                     # Step 2: Chunk the codebase
+                    redis_client.set(f"job:{job_id}", json.dumps({"status": "chunking"}))
                     chunks = chunk_codebase(repo_path)
                     
                     # Step 3: Embed with OpenAI, Save to Qdrant
+                    redis_client.set(f"job:{job_id}", json.dumps({"status": "storing"}))
                     store_chunks_in_qdrant(chunks, github_url)
                     
                     # Step 4: Tell Node.js we are finished!
