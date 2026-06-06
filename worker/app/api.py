@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Dict, Optional
 from dotenv import load_dotenv
@@ -13,12 +14,14 @@ class ChatRequest(BaseModel):
     question: str
     history: Optional[List[Dict[str, str]]] = []
 
+
 @app.post("/chat")
 def chat_with_codebase(request: ChatRequest):
     try:
-        # Call our LangChain logic
-        answer = answer_question(request.githubUrl, request.question, request.history)
-        return {"answer": answer}
+        # FastAPI handles generators natively via StreamingResponse
+        # media_type="text/event-stream" tells the client it's an SSE connection
+        generator = answer_question(request.githubUrl, request.question, request.history)
+        return StreamingResponse(generator, media_type="text/event-stream")
     except Exception as e:
-        print(f"Error during chat: {e}")
+        print(f"Error during stream: {e}")
         raise HTTPException(status_code=500, detail=str(e))

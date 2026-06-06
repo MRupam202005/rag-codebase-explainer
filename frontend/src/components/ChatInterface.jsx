@@ -49,11 +49,36 @@ export default function ChatInterface({ githubUrl }) {
         body: JSON.stringify({ githubUrl, question: userMessage })
       });
 
-      const data = await res.json();
-      
-      if (data.error) throw new Error(data.error);
+      if (!res.ok) throw new Error("Network response was not ok");
 
-      setMessages(prev => [...prev, { role: 'assistant', content: data.answer }]);
+      // We immediately add an empty assistant message so we can stream into it
+      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+      
+      // Tap into the native browser stream!
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+        if (value) {
+          const chunk = decoder.decode(value, { stream: true });
+          
+          setMessages(prev => {
+            // Create a copy of the messages array
+            const newMessages = [...prev];
+            // Get the last message (which is our assistant message)
+            const lastMessage = { ...newMessages[newMessages.length - 1] };
+            // Append the new streamed text chunk
+            lastMessage.content += chunk;
+            // Replace it in the array
+            newMessages[newMessages.length - 1] = lastMessage;
+            return newMessages;
+          });
+        }
+      }
+
     } catch (err) {
       setMessages(prev => [...prev, { role: 'assistant', content: `**Error:** ${err.message}` }]);
     } finally {
@@ -136,7 +161,7 @@ export default function ChatInterface({ githubUrl }) {
             </div>
           </div>
         ))}
-        {isLoading && (
+        {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
              <div style={{ background: 'var(--accent-color)', color: 'white', padding: '0.6rem', borderRadius: '8px' }}>
               <Bot size={20} />

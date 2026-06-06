@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import LandingHero from './components/LandingHero';
 import PipelineLoader from './components/PipelineLoader';
 import ChatInterface from './components/ChatInterface';
+import Sidebar from './components/Sidebar';
 
 function App() {
-  const [stage, setStage] = useState('landing'); // 'landing', 'loading', 'chat'
-  const [jobId, setJobId] = useState(null);
-  const [githubUrl, setGithubUrl] = useState('');
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const startIngestion = async (url) => {
     try {
@@ -19,16 +20,16 @@ function App() {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
-      setGithubUrl(url);
-      setJobId(data.jobId);
-      setStage('loading');
+      // Navigate to loading screen and pass the original URL via state
+      navigate(`/loading/${data.jobId}`, { state: { githubUrl: url } });
     } catch (err) {
       alert(`Failed to start ingestion: ${err.message}`);
     }
   };
 
   const handleIngestionComplete = (url) => {
-    setStage('chat');
+    const cleanUrl = url.replace(/^https?:\/\//, '');
+    navigate(`/chat/${cleanUrl}`);
   };
 
   return (
@@ -42,21 +43,62 @@ function App() {
           <span style={{ fontWeight: 600, fontSize: '1.2rem', letterSpacing: '-0.02em' }}>Codebase Explainer</span>
         </div>
         
-        {stage !== 'landing' && (
-          <button onClick={() => setStage('landing')} style={{ background: 'transparent', color: 'var(--text-secondary)', padding: '0.5rem 1rem', border: '1px solid var(--border-color)' }}>
+        {location.pathname !== '/' && (
+          <button onClick={() => {
+            navigate('/');
+          }} style={{ background: 'transparent', color: 'var(--text-secondary)', padding: '0.5rem 1rem', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer' }}>
             Start Over
           </button>
         )}
       </nav>
 
       {/* Main Content Area */}
-      <main>
-        {stage === 'landing' && <LandingHero onStartIngestion={startIngestion} />}
-        {stage === 'loading' && <PipelineLoader jobId={jobId} onComplete={handleIngestionComplete} />}
-        {stage === 'chat' && <ChatInterface githubUrl={githubUrl} />}
+      <main style={{ flex: 1, display: 'flex', gap: '1.5rem', alignItems: 'stretch' }}>
+        <Routes>
+          <Route path="/" element={<LandingHero onStartIngestion={startIngestion} />} />
+          
+          <Route path="/loading/:id" element={
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+               <PipelineLoaderWrapper onComplete={handleIngestionComplete} />
+            </div>
+          } />
+          
+          <Route path="/chat/*" element={
+            <>
+              <Sidebar />
+              <div style={{ flex: 1 }}>
+                <ChatInterfaceWrapper />
+              </div>
+            </>
+          } />
+        </Routes>
       </main>
     </>
   );
+}
+
+// Wrapper to pass route params to PipelineLoader
+import { useParams } from 'react-router-dom';
+function PipelineLoaderWrapper({ onComplete }) {
+  const { id } = useParams();
+  const location = useLocation();
+  const githubUrl = location.state?.githubUrl;
+  
+  if (!githubUrl) return <Navigate to="/" />;
+  
+  return <PipelineLoader jobId={id} onComplete={() => onComplete(githubUrl)} />;
+}
+
+// Wrapper to pass the githubUrl to ChatInterface
+function ChatInterfaceWrapper() {
+  const { '*': repoPath } = useParams();
+  
+  if (!repoPath) return <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Select a repository from the sidebar.</div>;
+  
+  const githubUrl = `https://${repoPath}`;
+  
+  // We add a key to force re-mount when the URL changes
+  return <ChatInterface key={githubUrl} githubUrl={githubUrl} />;
 }
 
 export default App;
