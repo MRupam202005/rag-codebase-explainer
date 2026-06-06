@@ -3,15 +3,18 @@ from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
+from langchain_core.messages import HumanMessage, AIMessage
+from typing import List, Dict, Optional
 
-def answer_question(github_url: str, question: str) -> str:
+def answer_question(github_url: str, question: str, history: Optional[List[Dict[str, str]]] = None) -> str:
     """
     1. Connects to Qdrant to find relevant code chunks for the specific github_url.
-    2. Injects them into a prompt.
-    3. Asks OpenAI (gpt-4o-mini) to answer the user's question based on that context.
+    2. Formats previous chat history.
+    3. Injects them into a prompt.
+    4. Asks OpenAI (gpt-4o-mini) to answer the user's question based on that context.
     """
     qdrant_url = os.getenv("QDRANT_URL", "http://localhost:6333")
     client = QdrantClient(url=qdrant_url)
@@ -56,8 +59,18 @@ def answer_question(github_url: str, question: str) -> str:
         "Context:\n{context}"
     )
 
+    # Convert raw history dicts into LangChain Message objects
+    chat_history = []
+    if history:
+        for msg in history:
+            if msg.get("role") == "user":
+                chat_history.append(HumanMessage(content=msg.get("content", "")))
+            elif msg.get("role") == "assistant":
+                chat_history.append(AIMessage(content=msg.get("content", "")))
+
     prompt = ChatPromptTemplate.from_messages([
         ("system", system_prompt),
+        MessagesPlaceholder(variable_name="history"),
         ("human", "{input}"),
     ])
 
@@ -77,7 +90,9 @@ def answer_question(github_url: str, question: str) -> str:
         return "\n\n".join(formatted_chunks)
 
     rag_chain = (
-        {"context": retriever | format_docs, "input": RunnablePassthrough()}
+        RunnablePassthrough.assign(
+            context=(lambda x: x["input"]) | retriever | format_docs
+        )
         | prompt
         | llm
         | StrOutputParser()
@@ -85,6 +100,9 @@ def answer_question(github_url: str, question: str) -> str:
 
     # Execute the chain
     print(f"Asking AI: {question}")
-    answer = rag_chain.invoke(question)
+    answer = rag_chain.invoke({
+        "input": question,
+        "history": chat_history
+    })
     
     return answer

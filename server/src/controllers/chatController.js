@@ -16,13 +16,23 @@ export const chatWithCodebase = async (req, res) => {
         });
 
         // We act as the API Gateway! Forward the request to our internal Python FastAPI server.
-        // We use the built-in fetch API (available in modern Node.js).
-        const pythonResponse = await fetch("http://127.0.0.1:8000/chat", {    // why it is "http://127.0.0.1:8000/chat"? ans: because we are using FastAPI server at port 8000 and the chat endpoint is /chat
+        
+        // FETCH HISTORY FOR AI CONTEXT
+        // We get the last 10 messages (5 pairs of Q&A) to serve as short-term memory
+        const rawHistory = await ChatMessage.find({ repositoryUrl: githubUrl })
+            .sort({ createdAt: -1 })
+            .limit(10)
+            .lean();
+            
+        // We sort it oldest-to-newest before sending it to Python
+        const history = rawHistory.reverse().map(msg => ({ role: msg.role, content: msg.content }));
+
+        const pythonResponse = await fetch("http://127.0.0.1:8000/chat", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ githubUrl, question })
+            body: JSON.stringify({ githubUrl, question, history })
         });
 
         if (!pythonResponse.ok) {
@@ -46,4 +56,5 @@ export const chatWithCodebase = async (req, res) => {
         console.error("Error communicating with Python Chat API:", error);
         res.status(500).json({ error: "Failed to generate AI response." });
     }
-};
+}; 
+
