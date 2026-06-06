@@ -1,5 +1,4 @@
 <div align="center">
-  <img src="frontend/public/icons.svg" alt="RAG Codebase Explainer Logo" width="120" />
   <h1>RAG Codebase Explainer</h1>
   <p><strong>Your Intelligent Pair-Programmer for Any GitHub Repository</strong></p>
 </div>
