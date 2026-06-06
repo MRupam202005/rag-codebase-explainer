@@ -1,6 +1,11 @@
 import mongoose from 'mongoose';
 
 const chatMessageSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
     repositoryUrl: {
         type: String,
         required: true,
@@ -17,5 +22,4 @@ const chatMessageSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
-export default ChatMessage;
+export const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);

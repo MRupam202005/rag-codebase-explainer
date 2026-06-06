@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
+import { AuthContext } from '../context/AuthContext';
 
 export default function PipelineLoader({ jobId, onComplete }) {
   const [status, setStatus] = useState('processing');
   const [error, setError] = useState(null);
+  const { token } = useContext(AuthContext);
 
   // We map backend states to our UI stepper
   const steps = [
@@ -18,18 +20,23 @@ export default function PipelineLoader({ jobId, onComplete }) {
     
     const checkStatus = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/job/${jobId}`);
-        const data = await res.json();
+        const res = await fetch(`http://localhost:5000/api/job/${jobId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const responseData = await res.json();
 
-        if (data.status) {
-          setStatus(data.status);
+        if (responseData.data && responseData.data.status) {
+          const jobData = responseData.data;
+          setStatus(jobData.status);
           
-          if (data.status === 'completed') {
+          if (jobData.status === 'completed') {
             clearInterval(interval);
-            setTimeout(() => onComplete(data.url), 1000); // 1 sec delay to show the final checkmark
-          } else if (data.status === 'failed') {
+            setTimeout(() => onComplete(jobData.url), 1000); // 1 sec delay to show the final checkmark
+          } else if (jobData.status === 'failed') {
             clearInterval(interval);
-            setError(data.error || 'Job failed during processing');
+            setError(jobData.error || 'Job failed during processing');
           }
         }
       } catch (err) {

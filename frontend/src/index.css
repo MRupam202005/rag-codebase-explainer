@@ -95,9 +95,12 @@ button:disabled {
 }
 
 /* Inputs */
-input[type="text"] {
+input[type="text"],
+input[type="password"],
+input[type="email"] {
   width: 100%;
   padding: 0.75rem 1rem;
+  padding-left: 2.5rem; /* Space for icon */
   border-radius: 8px;
   border: 1px solid var(--border-color);
   background: white;
@@ -107,7 +110,9 @@ input[type="text"] {
   outline: none;
 }
 
-input[type="text"]:focus {
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus {
   border-color: var(--text-secondary);
   box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
 }

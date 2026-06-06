@@ -18,5 +18,4 @@ const repositorySchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-const Repository = mongoose.model('Repository', repositorySchema);
-export default Repository;
+export const Repository = mongoose.model('Repository', repositorySchema);

@@ -1,29 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import LandingHero from './components/LandingHero';
 import PipelineLoader from './components/PipelineLoader';
 import ChatInterface from './components/ChatInterface';
 import Sidebar from './components/Sidebar';
+import Login from './components/Auth/Login';
+import Register from './components/Auth/Register';
+import VerifyEmail from './components/Auth/VerifyEmail';
+import { AuthContext } from './context/AuthContext';
+import toast from 'react-hot-toast';
 
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, token, loading, logout } = useContext(AuthContext);
 
   const startIngestion = async (url) => {
     try {
       const res = await fetch('http://localhost:5000/api/ingest-repository', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
         body: JSON.stringify({ githubUrl: url })
       });
       
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      const responseData = await res.json();
+      if (!res.ok) throw new Error(responseData.message || 'Failed to start ingestion');
 
       // Navigate to loading screen and pass the original URL via state
-      navigate(`/loading/${data.jobId}`, { state: { githubUrl: url } });
+      navigate(`/loading/${responseData.data.jobId}`, { state: { githubUrl: url } });
     } catch (err) {
-      alert(`Failed to start ingestion: ${err.message}`);
+      toast.error(`Failed to start ingestion: ${err.message}`);
     }
   };
 
@@ -43,39 +52,66 @@ function App() {
           <span style={{ fontWeight: 600, fontSize: '1.2rem', letterSpacing: '-0.02em' }}>Codebase Explainer</span>
         </div>
         
-        {location.pathname !== '/' && (
-          <button onClick={() => {
-            navigate('/');
-          }} style={{ background: 'transparent', color: 'var(--text-secondary)', padding: '0.5rem 1rem', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer' }}>
-            Start Over
-          </button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {location.pathname !== '/' && user && (
+            <button onClick={() => {
+              navigate('/');
+            }} style={{ background: 'transparent', color: 'var(--text-secondary)', padding: '0.5rem 1rem', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer' }}>
+              Dashboard
+            </button>
+          )}
+          
+          {user && (
+            <button onClick={() => {
+              logout();
+              navigate('/login');
+            }} style={{ background: 'transparent', color: 'var(--text-primary)', padding: '0.5rem 1rem', border: '1px solid var(--accent-color)', borderRadius: '8px', cursor: 'pointer' }}>
+              Logout
+            </button>
+          )}
+        </div>
       </nav>
 
       {/* Main Content Area */}
       <main className="main-content" style={{ flex: 1, display: 'flex', gap: '1.5rem', alignItems: 'stretch' }}>
-        <Routes>
-          <Route path="/" element={
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <LandingHero onStartIngestion={startIngestion} />
-            </div>
-          } />
-          
-          <Route path="/loading/:id" element={
-            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-               <PipelineLoaderWrapper onComplete={handleIngestionComplete} />
-            </div>
-          } />
-          
-          <Route path="/chat/*" element={
-            <>
-              <Sidebar />
-              <div style={{ flex: 1 }}>
-                <ChatInterfaceWrapper />
-              </div>
-            </>
-          } />
-        </Routes>
+        {loading ? (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>
+        ) : (
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+            <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+            <Route path="/verify/:token" element={<VerifyEmail />} />
+
+            {/* Protected Routes */}
+            <Route path="/" element={
+              user ? (
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <LandingHero onStartIngestion={startIngestion} />
+                </div>
+              ) : <Navigate to="/login" />
+            } />
+            
+            <Route path="/loading/:id" element={
+              user ? (
+                <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                   <PipelineLoaderWrapper onComplete={handleIngestionComplete} />
+                </div>
+              ) : <Navigate to="/login" />
+            } />
+            
+            <Route path="/chat/*" element={
+              user ? (
+                <>
+                  <Sidebar />
+                  <div style={{ flex: 1 }}>
+                    <ChatInterfaceWrapper />
+                  </div>
+                </>
+              ) : <Navigate to="/login" />
+            } />
+          </Routes>
+        )}
       </main>
     </>
   );

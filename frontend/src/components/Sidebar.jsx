@@ -1,24 +1,39 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { GitBranch, Clock } from 'lucide-react';
+import { AuthContext } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 export default function Sidebar() {
   const [repositories, setRepositories] = useState([]);
   const navigate = useNavigate();
   const { '*': repoPath } = useParams();
+  const { token, logout } = useContext(AuthContext);
 
   useEffect(() => {
     const fetchRepos = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/repositories');
+        const res = await fetch('http://localhost:5000/api/repositories', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         const data = await res.json();
-        setRepositories(data.repositories || []);
+        
+        if (res.status === 401) {
+            toast.error("Session expired. Please log in again.");
+            logout();
+            return;
+        }
+        
+        setRepositories(data.data?.repositories || []);
       } catch (err) {
         console.error("Failed to load recent repositories", err);
+        toast.error("Failed to load repositories");
       }
     };
-    fetchRepos();
-  }, []);
+    if (token) fetchRepos();
+  }, [token, logout]);
 
   return (
     <div className="glass-panel sidebar-panel" style={{ 

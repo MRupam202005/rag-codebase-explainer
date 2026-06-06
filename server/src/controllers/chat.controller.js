@@ -1,23 +1,28 @@
-import ChatMessage from "../models/ChatMessage.js";
+import {ChatMessage} from "../models/chatMessage.model.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/ApiError.js";
 
-
-export const chatWithCodebase = async (req, res) => {
+export const chatWithCodebase = asyncHandler(async (req, res) => {
     const { githubUrl, question } = req.body;
 
     if (!githubUrl || !question) {
-        return res.status(400).json({ error: "Please provide both a GitHub URL and a question." });
+        throw new ApiError(400, "Please provide both a GitHub URL and a question.");
     }
 
     try {
         // SAVE USER MESSAGE TO MONGODB
         await ChatMessage.create({
+            userId: req.user._id,
             repositoryUrl: githubUrl,
             role: 'user',
             content: question
         });
 
         // FETCH HISTORY FOR AI CONTEXT
-        const rawHistory = await ChatMessage.find({ repositoryUrl: githubUrl })
+        const rawHistory = await ChatMessage.find({ 
+            repositoryUrl: githubUrl,
+            userId: req.user._id
+        })
             .sort({ createdAt: -1 })
             .limit(10)
             .lean();
@@ -55,6 +60,7 @@ export const chatWithCodebase = async (req, res) => {
 
         // When Python is done streaming, save the full captured answer to MongoDB
         await ChatMessage.create({
+            userId: req.user._id,
             repositoryUrl: githubUrl,
             role: 'assistant',
             content: fullAnswer
@@ -68,4 +74,4 @@ export const chatWithCodebase = async (req, res) => {
         res.write(`data: [ERROR] Failed to generate AI response.\n\n`);
         res.end();
     }
-};
+});

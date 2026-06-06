@@ -1,8 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import { Send, User, Bot, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { AuthContext } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 export default function ChatInterface({ githubUrl }) {
   const [messages, setMessages] = useState([
@@ -11,6 +13,7 @@ export default function ChatInterface({ githubUrl }) {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const { token, logout } = useContext(AuthContext);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -21,17 +24,29 @@ export default function ChatInterface({ githubUrl }) {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/chat/history?githubUrl=${encodeURIComponent(githubUrl)}`);
+        const res = await fetch(`http://localhost:5000/api/chat/history?githubUrl=${encodeURIComponent(githubUrl)}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         const data = await res.json();
-        if (data.history && data.history.length > 0) {
-          setMessages(data.history);
+        
+        if (res.status === 401) {
+            toast.error("Session expired.");
+            logout();
+            return;
+        }
+
+        if (data.data?.history && data.data.history.length > 0) {
+          setMessages(data.data.history);
         }
       } catch (err) {
         console.error("Failed to load chat history", err);
+        toast.error("Failed to load chat history");
       }
     };
-    fetchHistory();
-  }, [githubUrl]);
+    if (token) fetchHistory();
+  }, [githubUrl, token, logout]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,7 +60,10 @@ export default function ChatInterface({ githubUrl }) {
     try {
       const res = await fetch('http://localhost:5000/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ githubUrl, question: userMessage })
       });
 
