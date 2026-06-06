@@ -84,6 +84,19 @@ def answer_question(github_url: str, question: str, history: Optional[List[Dict[
         for doc in docs:
             # We extract the file path from the LangChain metadata!
             source_file = doc.metadata.get('source', 'Unknown File')
+            
+            # CLEAN UP PATH: The loader saves the absolute path (e.g., C:/.../temp_repo_xyz/src/app.js)
+            # We must strip the temporary laptop folder so the AI only sees "src/app.js"
+            if "temp_repo_" in source_file:
+                # Split the path by the OS separator (works for both Windows \\ and Mac/Linux /)
+                parts = source_file.replace('\\', '/').split('/')
+                try:
+                    # Find where the temp_repo folder is, and only keep the folders AFTER it
+                    temp_idx = next(i for i, part in enumerate(parts) if part.startswith("temp_repo_"))
+                    source_file = "/".join(parts[temp_idx+1:])
+                except StopIteration:
+                    pass
+            
             # We wrap the code chunk in a header so the LLM knows where it came from
             formatted_chunks.append(f"--- FILE PATH: {source_file} ---\n{doc.page_content}")
             
