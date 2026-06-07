@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { Mail, Lock, ArrowRight, Code2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { API_BASE_URL } from '../../config/api';
+import apiClient from '../../config/apiClient';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -14,20 +14,14 @@ export default function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            const responseData = await res.json();
-            
-            if (!res.ok) throw new Error(responseData.message || 'Failed to login');
+            const res = await apiClient.post('/api/auth/login', { email, password });
+            const responseData = res.data;
             
             login(responseData.data.user, responseData.data.accessToken);
             toast.success("Welcome back!");
             navigate('/');
         } catch (err) {
-            toast.error(err.message);
+            toast.error(err.response?.data?.message || err.message || 'Failed to login');
         }
     };
 

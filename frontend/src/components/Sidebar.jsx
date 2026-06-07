@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { GitBranch, Clock } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import toast from 'react-hot-toast';
-import { API_BASE_URL } from '../config/api';
+import apiClient from '../config/apiClient';
 
 export default function Sidebar() {
   const [repositories, setRepositories] = useState([]);
@@ -14,18 +14,8 @@ export default function Sidebar() {
   useEffect(() => {
     const fetchRepos = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/repositories`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const data = await res.json();
-        
-        if (res.status === 401) {
-            toast.error("Session expired. Please log in again.");
-            logout();
-            return;
-        }
+        const res = await apiClient.get('/api/repositories');
+        const data = res.data;
         
         setRepositories(data.data?.repositories || []);
       } catch (err) {

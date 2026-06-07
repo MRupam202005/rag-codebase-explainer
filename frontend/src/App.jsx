@@ -8,7 +8,7 @@ import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import VerifyEmail from './components/Auth/VerifyEmail';
 import { AuthContext } from './context/AuthContext';
-import { API_BASE_URL } from './config/api';
+import apiClient from './config/apiClient';
 import toast from 'react-hot-toast';
 
 function App() {
@@ -18,17 +18,9 @@ function App() {
 
   const startIngestion = async (url) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/ingest-repository`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
-        },
-        body: JSON.stringify({ githubUrl: url })
-      });
+      const res = await apiClient.post('/api/ingest-repository', { githubUrl: url });
       
-      const responseData = await res.json();
-      if (!res.ok) throw new Error(responseData.message || 'Failed to start ingestion');
+      const responseData = res.data;
 
       // Navigate to loading screen and pass the original URL via state
       navigate(`/loading/${responseData.data.jobId}`, { state: { githubUrl: url } });

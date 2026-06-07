@@ -6,6 +6,7 @@ import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { AuthContext } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import { API_BASE_URL } from '../config/api';
+import apiClient from '../config/apiClient';
 
 export default function ChatInterface({ githubUrl }) {
   const [messages, setMessages] = useState([
@@ -25,19 +26,9 @@ export default function ChatInterface({ githubUrl }) {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/chat/history?githubUrl=${encodeURIComponent(githubUrl)}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const data = await res.json();
+        const res = await apiClient.get(`/api/chat/history?githubUrl=${encodeURIComponent(githubUrl)}`);
+        const data = res.data;
         
-        if (res.status === 401) {
-            toast.error("Session expired.");
-            logout();
-            return;
-        }
-
         if (data.data?.history && data.data.history.length > 0) {
           setMessages(data.data.history);
         }

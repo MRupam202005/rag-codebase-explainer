@@ -48,8 +48,8 @@ const registerUser = asyncHandler(async (req, res) => {
         return res.status(400).json(new ApiResponse(400, {}, "Something went wrong while registering the user"));
     } 
 
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:5000";
-    const verificationUrl = `${backendUrl}/api/auth/verify/${verifyToken}`;
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const verificationUrl = `${frontendUrl}/verify/${verifyToken}`;
     const message = `
         <h1>Email Verification</h1>
         <p>Please go to this link to verify your email address:</p>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, User, UserPlus, Code2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { API_BASE_URL } from '../../config/api';
+import apiClient from '../../config/apiClient';
 
 export default function Register() {
     const [name, setName] = useState('');
@@ -15,19 +15,12 @@ export default function Register() {
         e.preventDefault();
         setIsLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, password })
-            });
-            const responseData = await res.json();
-            
-            if (!res.ok) throw new Error(responseData.message || 'Failed to register');
+            await apiClient.post('/api/auth/register', { name, email, password });
             
             toast.success("Registration successful! Please check your email/console to verify your account.", { duration: 6000 });
             navigate('/login');
         } catch (err) {
-            toast.error(err.message);
+            toast.error(err.response?.data?.message || err.message || 'Failed to register');
         } finally {
             setIsLoading(false);
         }

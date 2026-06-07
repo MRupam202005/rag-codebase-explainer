@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import apiClient from '../config/apiClient';
 
 export const AuthContext = createContext();
 
@@ -37,12 +38,18 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', authToken);
     };
 
-    const logout = () => {
-        setUser(null);
-        setToken(null);
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        toast.success("Logged out successfully");
+    const logout = async () => {
+        try {
+            await apiClient.post('/api/auth/logout');
+        } catch (error) {
+            console.error("Failed to logout on backend:", error);
+        } finally {
+            setUser(null);
+            setToken(null);
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            toast.success("Logged out successfully");
+        }
     };
 
     return (
