@@ -10,9 +10,10 @@ def store_chunks_in_qdrant(chunks, github_url: str):
     """
     print(f"Connecting to Qdrant Database...")
     
-    # 1. Initialize the Qdrant Client (running locally via Docker)
+    # 1. Initialize the Qdrant Client (running locally via Docker or remotely via Cloud)
     qdrant_url = os.getenv("QDRANT_URL", "http://localhost:6333")
-    client = QdrantClient(url=qdrant_url)
+    qdrant_api_key = os.getenv("QDRANT_API_KEY", None)
+    client = QdrantClient(url=qdrant_url, api_key=qdrant_api_key)
     
     # Define our collection (table) name
     collection_name = "codebase_explainer"
@@ -36,6 +37,7 @@ def store_chunks_in_qdrant(chunks, github_url: str):
         chunks,
         embeddings,
         url=qdrant_url,
+        api_key=qdrant_api_key,
         collection_name=collection_name,
     )
     

@@ -22,15 +22,16 @@ export default function VerifyEmail() {
                 }, 1500);
 
             } catch (err) {
-                setStatus(`Error: ${err.message}`);
-                toast.error(err.message);
+                const errorMessage = err.response?.data?.message || err.message || 'Verification failed';
+                setStatus(`Error: ${errorMessage}`);
+                toast.error(errorMessage);
             }
         };
 
         if (token) {
             verify();
         }
-    }, [token, login, navigate]);
+    }, [token, navigate]);
 
     return (
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

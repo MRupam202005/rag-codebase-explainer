@@ -11,7 +11,8 @@ from typing import List, Dict, Optional, Generator
 
 def _build_rag_chain(github_url: str, history: Optional[List[Dict[str, str]]] = None):
     qdrant_url = os.getenv("QDRANT_URL", "http://localhost:6333")
-    client = QdrantClient(url=qdrant_url)
+    qdrant_api_key = os.getenv("QDRANT_API_KEY", None)
+    client = QdrantClient(url=qdrant_url, api_key=qdrant_api_key)
     embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
     
     vector_store = QdrantVectorStore(
