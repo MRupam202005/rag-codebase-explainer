@@ -51,9 +51,30 @@ const registerUser = asyncHandler(async (req, res) => {
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
     const verificationUrl = `${frontendUrl}/verify/${verifyToken}`;
     const message = `
-        <h1>Email Verification</h1>
-        <p>Please go to this link to verify your email address:</p>
-        <a href=${verificationUrl} clicktracking=off>${verificationUrl}</a>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaec; border-radius: 8px; background-color: #f9fafb;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="color: #111827; margin-bottom: 5px;">RAG Codebase Explainer</h1>
+                <p style="color: #6b7280; font-size: 16px; margin-top: 0;">AI-Powered Code Analysis</p>
+            </div>
+            <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <h2 style="color: #1f2937; margin-top: 0;">Welcome, ${name}! 👋</h2>
+                <p style="color: #4b5563; font-size: 16px; line-height: 1.5;">
+                    Thanks for signing up! To get started exploring and querying repositories with AI, please verify your email address by clicking the button below.
+                </p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${verificationUrl}" clicktracking="off" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; display: inline-block;">
+                        Verify My Account
+                    </a>
+                </div>
+                <p style="color: #9ca3af; font-size: 14px; margin-bottom: 0;">
+                    If the button doesn't work, copy and paste this link into your browser:<br>
+                    <a href="${verificationUrl}" style="color: #4f46e5;">${verificationUrl}</a>
+                </p>
+            </div>
+            <p style="text-align: center; color: #9ca3af; font-size: 12px; margin-top: 20px;">
+                This link will expire in 1 hour. If you did not create this account, please ignore this email.
+            </p>
+        </div>
     `;
 
     try {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import apiClient from '../../config/apiClient';
@@ -8,8 +8,13 @@ export default function VerifyEmail() {
     const [status, setStatus] = useState('Verifying your email...');
     const navigate = useNavigate();
 
+    const hasVerified = useRef(false);
+
     useEffect(() => {
         const verify = async () => {
+            if (hasVerified.current) return;
+            hasVerified.current = true;
+            
             try {
                 const res = await apiClient.get(`/api/auth/verify/${token}`);
 
