@@ -4,6 +4,7 @@ import { AuthContext } from '../../context/AuthContext';
 import { Mail, Lock, ArrowRight, Code2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import apiClient from '../../config/apiClient';
+import AuthLayout from './AuthLayout';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -26,7 +27,7 @@ export default function Login() {
     };
 
     return (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+        <AuthLayout>
             <div className="glass-panel" style={{ width: '100%', maxWidth: '420px', textAlign: 'center', padding: '3rem 2rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
                     <div style={{ background: 'var(--accent-color)', padding: '1rem', borderRadius: '16px', boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }}>
@@ -64,22 +65,7 @@ export default function Login() {
                 <p style={{ marginTop: '2rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
                     Don't have an account? <Link to="/register" style={{ color: 'var(--accent-color)', fontWeight: 600, textDecoration: 'none' }}>Create one</Link>
                 </p>
-                
-                {/* Brief Documentation / Explanation */}
-                <div style={{ 
-                    background: 'rgba(255,255,255,0.4)', 
-                    padding: '1.25rem', 
-                    borderRadius: '12px', 
-                    border: '1px solid var(--border-color)', 
-                    textAlign: 'left',
-                    marginTop: '2rem' 
-                }}>
-                    <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>What is this?</h3>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '0' }}>
-                        The <strong>RAG Codebase Explainer</strong> acts as your intelligent pair-programmer. Submit a GitHub URL, and our system will ingest, chunk, and embed the code using advanced language models. You can then chat with the codebase in real-time to understand its architecture and logic.
-                    </p>
-                </div>
             </div>
-        </div>
+        </AuthLayout>
     );
 }

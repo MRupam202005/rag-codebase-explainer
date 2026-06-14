@@ -27,7 +27,7 @@ apiClient.interceptors.response.use(
         // If the error is 401 and we haven't already retried this request
         if (error.response?.status === 401 && !originalRequest._retry) {
             // Check if it's the refresh token endpoint itself failing
-            if (originalRequest.url.includes('/api/auth/refresh-access-token') || originalRequest.url.includes('/api/auth/login')) {
+            if (originalRequest.url.includes('/api/refresh-access-token') || originalRequest.url.includes('/api/auth/login')) {
                 // If refresh token fails, clear local storage and redirect to login
                 localStorage.removeItem('user');
                 localStorage.removeItem('token');

@@ -34,15 +34,26 @@ function App() {
     navigate(`/chat/${cleanUrl}`);
   };
 
-  return (
+    const [isHoveringUser, setIsHoveringUser] = useState(false);
+
+    return (
     <>
       {/* Top Navigation Bar */}
-      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+      <nav className="glass-panel" style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between', 
+        marginBottom: '2rem',
+        padding: '1rem 1.5rem',
+        borderRadius: '24px', // More rounded pill shape for navbar
+        position: 'relative',
+        zIndex: 100
+      }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ width: '32px', height: '32px', background: 'var(--accent-color)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
+          <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #0071e3 0%, #4facfe 100%)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', boxShadow: '0 4px 12px rgba(0, 113, 227, 0.3)' }}>
             RAG
           </div>
-          <span style={{ fontWeight: 600, fontSize: '1.2rem', letterSpacing: '-0.02em' }}>Codebase Explainer</span>
+          <span style={{ fontWeight: 600, fontSize: '1.25rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>Codebase Explainer</span>
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -55,12 +66,74 @@ function App() {
           )}
           
           {user && (
-            <button onClick={() => {
-              logout();
-              navigate('/login');
-            }} style={{ background: 'transparent', color: 'var(--text-primary)', padding: '0.5rem 1rem', border: '1px solid var(--accent-color)', borderRadius: '8px', cursor: 'pointer' }}>
-              Logout
-            </button>
+            <div 
+              style={{ position: 'relative', display: 'flex', alignItems: 'center' }}
+              onMouseEnter={() => setIsHoveringUser(true)}
+              onMouseLeave={() => setIsHoveringUser(false)}
+            >
+              {/* User Avatar Circle */}
+              <div style={{ 
+                width: '40px', 
+                height: '40px', 
+                borderRadius: '50%', 
+                background: 'linear-gradient(135deg, #0071e3 0%, #4facfe 100%)', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                color: 'white', 
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(0, 113, 227, 0.25)',
+                border: '2px solid white'
+              }}>
+                {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+              </div>
+
+              {/* Dropdown Menu on Hover */}
+              {isHoveringUser && (
+                <div style={{
+                  position: 'absolute',
+                  top: '110%',
+                  right: 0,
+                  background: 'var(--panel-bg)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '12px',
+                  padding: '1rem',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                  minWidth: '220px',
+                  zIndex: 200,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px'
+                }}>
+                  <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', marginBottom: '5px' }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '1rem', color: 'var(--text-primary)' }}>{user.name}</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '2px', wordBreak: 'break-all' }}>{user.email}</div>
+                  </div>
+                  
+                  <button onClick={() => {
+                    logout();
+                    navigate('/login');
+                  }} style={{ 
+                    background: 'rgba(239, 68, 68, 0.1)', 
+                    color: '#ef4444', 
+                    padding: '0.6rem 1rem', 
+                    border: '1px solid rgba(239, 68, 68, 0.2)', 
+                    borderRadius: '8px', 
+                    cursor: 'pointer',
+                    fontWeight: 500,
+                    width: '100%',
+                    textAlign: 'center',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; }}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </nav>
@@ -124,7 +197,7 @@ function App() {
         gap: '0.5rem'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <div style={{ width: '20px', height: '20px', background: 'var(--accent-color)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '10px' }}>
+          <div style={{ width: '24px', height: '24px', background: 'linear-gradient(135deg, #0071e3 0%, #4facfe 100%)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '10px', boxShadow: '0 2px 8px rgba(0, 113, 227, 0.2)' }}>
             RAG
           </div>
           <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Codebase Explainer</span>

@@ -40,9 +40,9 @@ export default function Sidebar() {
       gap: '1rem',
       overflowY: 'auto'
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
-        <Clock size={18} />
-        <h3 style={{ fontSize: '0.9rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recent Repositories</h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', paddingLeft: '0.5rem' }}>
+        <Clock size={16} />
+        <h3 style={{ fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recent Repositories</h3>
       </div>
       
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -60,26 +60,33 @@ export default function Sidebar() {
                   navigate(`/chat/${cleanUrl}`);
                 }}
                 style={{
-                  padding: '0.75rem',
-                  borderRadius: '8px',
-                  background: isSelected ? 'var(--accent-color)' : 'rgba(255,255,255,0.5)',
-                  color: isSelected ? 'white' : 'inherit',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '12px',
+                  background: isSelected ? 'var(--accent-color)' : 'transparent',
+                  color: isSelected ? 'white' : 'var(--text-primary)',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.75rem',
-                  transition: 'all 0.2s ease',
-                  border: isSelected ? '1px solid var(--accent-color)' : '1px solid transparent'
+                  transition: 'all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1)',
+                  boxShadow: isSelected ? '0 4px 12px rgba(0, 113, 227, 0.25)' : 'none',
+                  border: '1px solid transparent'
                 }}
                 onMouseEnter={(e) => {
-                  if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.8)';
+                  if (!isSelected) {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.6)';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.5)';
+                  if (!isSelected) {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.transform = 'none';
+                  }
                 }}
               >
-                <GitBranch size={16} />
-                <span style={{ fontSize: '0.85rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <GitBranch size={16} style={{ color: isSelected ? 'white' : 'var(--text-secondary)' }} />
+                <span style={{ fontSize: '0.9rem', fontWeight: isSelected ? 500 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {repo.url.replace(/^https?:\/\/(github\.com\/)?/, '')}
                 </span>
               </div>

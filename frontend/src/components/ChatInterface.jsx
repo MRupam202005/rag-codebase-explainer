@@ -107,7 +107,7 @@ export default function ChatInterface({ githubUrl }) {
       overflow: 'hidden'
     }}>
       {/* Header */}
-      <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.5)' }}>
+      <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-color)', background: 'transparent' }}>
         <h2 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Codebase Assistant</h2>
         <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
           {githubUrl}
@@ -117,28 +117,38 @@ export default function ChatInterface({ githubUrl }) {
       {/* Messages Area */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         {messages.map((msg, idx) => (
-          <div key={idx} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+          <div key={idx} style={{ 
+            display: 'flex', 
+            gap: '1rem', 
+            alignItems: 'flex-start',
+            flexDirection: msg.role === 'user' ? 'row-reverse' : 'row'
+          }}>
             <div style={{ 
-              background: msg.role === 'assistant' ? 'var(--accent-color)' : '#f3f4f6', 
-              color: msg.role === 'assistant' ? 'white' : '#111',
+              background: msg.role === 'assistant' ? 'var(--accent-color)' : 'white', 
+              color: msg.role === 'assistant' ? 'white' : 'var(--text-secondary)',
               padding: '0.6rem',
-              borderRadius: '8px',
+              borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
             }}>
               {msg.role === 'assistant' ? <Bot size={20} /> : <User size={20} />}
             </div>
             
             <div style={{ 
-              background: msg.role === 'assistant' ? 'transparent' : '#f3f4f6',
-              padding: msg.role === 'assistant' ? '0' : '1rem',
-              borderRadius: '12px',
-              borderTopLeftRadius: msg.role === 'user' ? '0' : '12px',
-              maxWidth: '85%',
-              lineHeight: 1.6,
-              width: '100%',
-              overflowX: 'auto'
+              background: msg.role === 'assistant' ? 'transparent' : 'var(--accent-color)',
+              color: msg.role === 'assistant' ? 'var(--text-primary)' : 'white',
+              padding: msg.role === 'assistant' ? '0' : '0.8rem 1.25rem',
+              borderRadius: '20px',
+              borderTopRightRadius: msg.role === 'user' ? '4px' : '20px',
+              borderTopLeftRadius: msg.role === 'assistant' ? '4px' : '20px',
+              maxWidth: '80%',
+              lineHeight: 1.5,
+              width: msg.role === 'assistant' ? '100%' : 'fit-content',
+              overflowX: 'auto',
+              boxShadow: msg.role === 'user' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
+              border: 'none'
             }}>
               {msg.role === 'user' ? (
                 <p style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{msg.content}</p>
@@ -174,7 +184,7 @@ export default function ChatInterface({ githubUrl }) {
         ))}
         {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-             <div style={{ background: 'var(--accent-color)', color: 'white', padding: '0.6rem', borderRadius: '8px' }}>
+             <div style={{ background: 'var(--accent-color)', color: 'white', padding: '0.6rem', borderRadius: '50%', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
               <Bot size={20} />
             </div>
             <Loader2 className="spinner" size={24} color="var(--text-secondary)" style={{ marginTop: '0.4rem' }} />
@@ -184,18 +194,18 @@ export default function ChatInterface({ githubUrl }) {
       </div>
 
       {/* Input Area */}
-      <div style={{ padding: '1.5rem', borderTop: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.5)' }}>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '0.75rem' }}>
+      <div style={{ padding: '1.5rem', borderTop: '1px solid var(--border-color)', background: 'transparent' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
           <input
             type="text"
             value={input}
             onChange={e => setInput(e.target.value)}
             placeholder="Ask a question about the code..."
             disabled={isLoading}
-            style={{ flex: 1, padding: '1rem', borderRadius: '12px' }}
+            style={{ flex: 1, padding: '1.25rem 1.5rem', borderRadius: '24px', fontSize: '1rem' }}
           />
-          <button type="submit" disabled={isLoading || !input.trim()} style={{ padding: '1rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Send size={20} />
+          <button type="submit" disabled={isLoading || !input.trim()} style={{ width: '56px', height: '56px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Send size={20} style={{ transform: 'translateX(-2px)' }} />
           </button>
         </form>
       </div>
