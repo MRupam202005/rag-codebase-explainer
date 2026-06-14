@@ -37,6 +37,7 @@ services:
     ports:
       - "5000:5000"
     environment:
+      - NODE_ENV=${NODE_ENV:-development}
       - MONGODB_URI=mongodb://mongo:27017/rag-codebase-explainer
       - REDIS_URL=redis://redis:6379
       - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:5173}
