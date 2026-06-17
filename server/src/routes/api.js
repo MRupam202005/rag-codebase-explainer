@@ -4,7 +4,7 @@ import { getJobStatus } from "../controllers/job.controller.js";
 import { getRecentRepositories } from "../controllers/repository.controller.js";
 import { chatWithCodebase } from "../controllers/chat.controller.js";
 import { getChatHistory } from "../controllers/chatHistory.controller.js";
-import { registerUser, loginUser, verifyEmail, logoutUser, refreshAccessToken } from "../controllers/user.controller.js";
+import { registerUser, loginUser, verifyEmail, logoutUser, refreshAccessToken, resendVerificationEmail } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
@@ -13,6 +13,7 @@ const router = express.Router();
 router.post("/auth/register", registerUser);
 router.post("/auth/login", loginUser);
 router.get("/auth/verify/:token", verifyEmail);
+router.post("/auth/resend-verification", resendVerificationEmail);
 router.post("/auth/logout", verifyJWT, logoutUser);
 router.post("/refresh-access-token", refreshAccessToken);
 

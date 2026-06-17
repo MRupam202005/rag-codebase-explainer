@@ -238,4 +238,70 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 })
 
-export {registerUser,loginUser, logoutUser, verifyEmail, refreshAccessToken }
+const resendVerificationEmail = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+    
+    if (!email) {
+        throw new ApiError(400, "Email is required");
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    if (user.isEmailVerified) {
+        throw new ApiError(400, "Email is already verified");
+    }
+
+    const verifyToken = crypto.randomBytes(20).toString("hex");
+    user.verifyToken = verifyToken;
+    user.verifyTokenExpiry = Date.now() + 3600000;
+    await user.save({ validateBeforeSave: false });
+
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const verificationUrl = `${frontendUrl}/verify/${verifyToken}`;
+    const message = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaec; border-radius: 8px; background-color: #f9fafb;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="color: #111827; margin-bottom: 5px;">RAG Codebase Explainer</h1>
+                <p style="color: #6b7280; font-size: 16px; margin-top: 0;">AI-Powered Code Analysis</p>
+            </div>
+            <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <h2 style="color: #1f2937; margin-top: 0;">Welcome back, ${user.name}! 👋</h2>
+                <p style="color: #4b5563; font-size: 16px; line-height: 1.5;">
+                    You requested a new verification link. Please verify your email address by clicking the button below.
+                </p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${verificationUrl}" clicktracking="off" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; display: inline-block;">
+                        Verify My Account
+                    </a>
+                </div>
+                <p style="color: #9ca3af; font-size: 14px; margin-bottom: 0;">
+                    If the button doesn't work, copy and paste this link into your browser:<br>
+                    <a href="${verificationUrl}" style="color: #4f46e5;">${verificationUrl}</a>
+                </p>
+            </div>
+            <p style="text-align: center; color: #9ca3af; font-size: 12px; margin-top: 20px;">
+                This link will expire in 1 hour. If you did not request this, please ignore this email.
+            </p>
+        </div>
+    `;
+
+    try {
+        await sendEmail({
+            email: user.email,
+            subject: "RAG Codebase Explainer - Verify your email (Resend)",
+            message
+        });
+    } catch (error) {
+        user.verifyToken = undefined;
+        user.verifyTokenExpiry = undefined;
+        await user.save({ validateBeforeSave: false });
+        throw new ApiError(500, "Something went wrong while sending verification email")
+    }
+
+    return res.status(200).json(new ApiResponse(200, {}, "Verification email resent successfully"));
+});
+
+export {registerUser,loginUser, logoutUser, verifyEmail, refreshAccessToken, resendVerificationEmail }
