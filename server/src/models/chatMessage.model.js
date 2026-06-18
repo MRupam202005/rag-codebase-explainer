@@ -9,7 +9,7 @@ const chatMessageSchema = new mongoose.Schema({
     repositoryUrl: {
         type: String,
         required: true,
-        index: true // We will query by this a lot
+        index: true
     },
     role: {
         type: String,

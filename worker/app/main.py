@@ -85,7 +85,7 @@ def start_worker():
                 print(f"[JOB COMPLETE] ID: {job_id}")
 
         except (redis.exceptions.TimeoutError, redis.exceptions.ConnectionError) as e:
-            print(f"[REDIS CONNECTION ERROR] {e}. Attempting to reconnect...")
+            # print(f"[REDIS CONNECTION ERROR] {e}. Attempting to reconnect...")
             time.sleep(5)
         except Exception as e:
             print(f"Error processing job: {e}")
