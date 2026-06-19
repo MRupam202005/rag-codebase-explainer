@@ -18,9 +18,6 @@ export const ingestRepository = asyncHandler(async (req, res) => {
     // 2. Check the Idempotency Cache (Now using MongoDB as the Source of Truth!)
     let repo = await Repository.findOne({ url: githubUrl });
     const jobId = uuidv4();
-    
-    console.log("Job ID: ", jobId);
-    console.log("Github URL: ", githubUrl);
 
     // 3. Save to MongoDB so we know it is 'processing'
     if (!repo) {

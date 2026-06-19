@@ -15,7 +15,6 @@ export const getJobStatus = asyncHandler(async (req, res) => {
     }
 
     const jobData = JSON.parse(jobDataString);
-    console.log("Job Status: ", jobData);
     
     // SYNC REDIS TO MONGODB: 
     // If Python tells Redis it's done, Node.js tells MongoDB it's done.
