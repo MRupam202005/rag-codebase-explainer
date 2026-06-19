@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, User, UserPlus, Code2 } from 'lucide-react';
+import { Mail, Lock, User, UserPlus, Code2, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import apiClient from '../../config/apiClient';
 import AuthLayout from './AuthLayout';
@@ -9,6 +9,7 @@ export default function Register() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
@@ -62,12 +63,36 @@ export default function Register() {
                     <div style={{ position: 'relative' }}>
                         <Lock size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
                         <input 
-                            type="password" 
+                            type={showPassword ? "text" : "password"} 
                             placeholder="Password" 
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            style={{ paddingRight: '2.5rem' }}
                         />
+                        <button 
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            style={{ 
+                                position: 'absolute', 
+                                right: '1rem', 
+                                top: '50%', 
+                                transform: 'translateY(-50%)',
+                                background: 'none',
+                                border: 'none',
+                                padding: 0,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            {showPassword ? (
+                                <EyeOff size={18} color="var(--text-secondary)" />
+                            ) : (
+                                <Eye size={18} color="var(--text-secondary)" />
+                            )}
+                        </button>
                     </div>
                     <button type="submit" disabled={isLoading} style={{ marginTop: '1rem', padding: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '1rem', fontWeight: 600 }}>
                         {isLoading ? 'Registering...' : (
