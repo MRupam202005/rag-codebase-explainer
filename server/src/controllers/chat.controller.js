@@ -10,6 +10,18 @@ export const chatWithCodebase = asyncHandler(async (req, res) => {
     }
 
     try {
+        // CHECK CHAT QUOTA LIMIT
+        const chatCount = await ChatMessage.countDocuments({ userId: req.user._id, role: 'user' });
+        const MAX_CHATS_PER_USER = process.env.MAX_CHATS_PER_USER || 20;
+
+        if (chatCount >= MAX_CHATS_PER_USER) {
+            res.setHeader('Content-Type', 'text/event-stream');
+            res.setHeader('Cache-Control', 'no-cache');
+            res.setHeader('Connection', 'keep-alive');
+            res.write(`**Error:** You have reached your limit of ${MAX_CHATS_PER_USER} messages. Please contact support to upgrade your account.`);
+            return res.end();
+        }
+
         // SAVE USER MESSAGE TO MONGODB
         await ChatMessage.create({
             userId: req.user._id,

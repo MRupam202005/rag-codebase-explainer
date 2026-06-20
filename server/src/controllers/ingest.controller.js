@@ -19,6 +19,16 @@ export const ingestRepository = asyncHandler(async (req, res) => {
     let repo = await Repository.findOne({ url: githubUrl });
     const jobId = uuidv4();
 
+    // 2.5 Check Repository Quota limit
+    const existingUserRepo = repo ? await UserRepo.findOne({ user: userId, repository: repo._id }) : null;
+    if (!existingUserRepo) {
+        const repoCount = await UserRepo.countDocuments({ user: userId });
+        const MAX_REPOS_PER_USER = process.env.MAX_REPOS_PER_USER || 3;
+        if (repoCount >= MAX_REPOS_PER_USER) {
+            throw new ApiError(403, `You have reached the maximum limit of ${MAX_REPOS_PER_USER} repositories.`);
+        }
+    }
+
     // 3. Save to MongoDB so we know it is 'processing'
     if (!repo) {
         repo = await Repository.create({ url: githubUrl, status: 'processing' });
@@ -29,7 +39,6 @@ export const ingestRepository = asyncHandler(async (req, res) => {
     }
 
     // 4. Link the user to this repository
-    const existingUserRepo = await UserRepo.findOne({ user: userId, repository: repo._id });
     if (!existingUserRepo) {
         await UserRepo.create({ user: userId, repository: repo._id });
     }
