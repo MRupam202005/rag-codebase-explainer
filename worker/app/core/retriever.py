@@ -23,7 +23,7 @@ def _build_rag_chain(github_url: str, history: Optional[List[Dict[str, str]]] = 
     
     retriever = vector_store.as_retriever(
         search_kwargs={
-            "k": 5,
+            "k": 8,
             "filter": models.Filter(
                 must=[
                     models.FieldCondition(
@@ -65,6 +65,9 @@ def _build_rag_chain(github_url: str, history: Optional[List[Dict[str, str]]] = 
         formatted_chunks = []
         for doc in docs:
             source_file = doc.metadata.get('source', 'Unknown File')
+            language = doc.metadata.get('language', 'unknown')
+            chunk_index = doc.metadata.get('chunk_index', 'unknown')
+            
             if "temp_repo_" in source_file:
                 parts = source_file.replace('\\', '/').split('/')
                 try:
@@ -72,7 +75,9 @@ def _build_rag_chain(github_url: str, history: Optional[List[Dict[str, str]]] = 
                     source_file = "/".join(parts[temp_idx+1:])
                 except StopIteration:
                     pass
-            formatted_chunks.append(f"--- FILE PATH: {source_file} ---\n{doc.page_content}")
+            
+            header = f"--- FILE PATH: {source_file} | LANGUAGE: {language} | CHUNK INDEX: {chunk_index} ---"
+            formatted_chunks.append(f"{header}\n{doc.page_content}")
             
         return "\n\n".join(formatted_chunks)
 

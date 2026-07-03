@@ -2,15 +2,15 @@ import os
 import stat
 import shutil
 import subprocess
-from uuid import uuid4
+import tempfile
 
 def clone_repository(github_url: str) -> str:
     """
     Clones a public GitHub repository to a local temporary directory.
     Returns the path to the cloned directory.
     """
-    # Create a unique directory name for this repo
-    temp_dir = os.path.join(os.getcwd(), f"temp_repo_{uuid4().hex[:8]}")
+    # Create a unique directory name for this repo in the OS's temp directory
+    temp_dir = tempfile.mkdtemp(prefix="temp_repo_")
     
     print(f"Cloning {github_url} into {temp_dir}...")
     
@@ -40,6 +40,6 @@ def cleanup_repository(repo_path: str):
     if os.path.exists(repo_path):
         print(f"Cleaning up {repo_path}...")
         # On Windows, Git creates read-only files in the .git folder.
-        # We must use an 'onerror' handler to change permissions before deleting.
+        # Use an 'onerror' handler to change permissions before deleting.
         shutil.rmtree(repo_path, onerror=remove_readonly)
         print("Cleanup complete.")

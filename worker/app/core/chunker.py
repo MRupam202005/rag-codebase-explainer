@@ -4,6 +4,27 @@ from langchain_text_splitters import Language
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 import os
+import tiktoken
+
+# Define standard OpenAI encoder for token counting (cl100k_base used by text-embedding-3 and GPT-4)
+tokenizer = tiktoken.get_encoding("cl100k_base")
+
+def tiktoken_len(text):
+    tokens = tokenizer.encode(text, disallowed_special=())
+    return len(tokens)
+
+# Map file extensions to their corresponding LangChain Language Enum
+EXTENSION_TO_LANGUAGE = {
+    ".py": Language.PYTHON,
+    ".js": Language.JS,
+    ".jsx": Language.JS,
+    ".ts": Language.TS,
+    ".tsx": Language.TS,
+    ".java": Language.JAVA,
+    ".cpp": Language.CPP,
+    ".go": Language.GO,
+    ".rs": Language.RUST,
+}
 
 def generate_repo_map(repo_path: str) -> str:
     """Generates a text-based tree map of the repository structure."""
@@ -57,18 +78,54 @@ def chunk_codebase(repo_path: str):
     if len(documents) > 1000:
         raise Exception(f"Repository too large ({len(documents)} files). Maximum allowed is 1000 files to protect API credits.")
 
-    # Step 2: The Splitter
-    # Using RecursiveCharacterTextSplitter, which tries to split on newlines and spaces 
-    # instead of cutting words or functions in half blindly.
-    # chunk_size: Max characters per chunk. 2000 is a safe number for embeddings.
-    # chunk_overlap: If a concept is cut, repeat 200 characters in the next chunk so context isn't lost.
-    python_splitter = RecursiveCharacterTextSplitter.from_language(
-        language=Language.PYTHON, chunk_size=2000, chunk_overlap=200
-    )
+    # Step 2: Organize and Split
+    # Group documents by their programming language
+    docs_by_language = {}
+    for doc in documents:
+        # Extract extension
+        file_path = doc.metadata.get("source", "")
+        _, ext = os.path.splitext(file_path)
+        ext = ext.lower()
+        
+        # Inject standard metadata
+        doc.metadata["file_extension"] = ext
+        
+        lang = EXTENSION_TO_LANGUAGE.get(ext)
+        if lang:
+            doc.metadata["language"] = lang.value
+        else:
+            doc.metadata["language"] = "unknown"
+            
+        if lang not in docs_by_language:
+            docs_by_language[lang] = []
+        docs_by_language[lang].append(doc)
+        
+    chunked_documents = []
     
-    # Execute the splitting process
-    print("Splitting files into semantic chunks...")
-    chunked_documents = python_splitter.split_documents(documents)
+    print("Splitting files into semantic, token-based chunks...")
+    for lang, docs in docs_by_language.items():
+        if lang:
+            # Use syntax-aware splitter for known languages
+            splitter = RecursiveCharacterTextSplitter.from_language(
+                language=lang, 
+                chunk_size=500,  # Token limit per chunk
+                chunk_overlap=50, # Token overlap
+                length_function=tiktoken_len
+            )
+        else:
+            # Fallback normal text splitter for unknown languages
+            splitter = RecursiveCharacterTextSplitter(
+                chunk_size=500, 
+                chunk_overlap=50,
+                length_function=tiktoken_len
+            )
+            
+        chunks = splitter.split_documents(docs)
+        chunked_documents.extend(chunks)
+        
+    # Inject chunk_index metadata to maintain sequential order context
+    for i, chunk in enumerate(chunked_documents):
+        chunk.metadata["chunk_index"] = i
     
     # Generate and inject the Repository Map as a special chunk
     repo_map_str = generate_repo_map(repo_path)
@@ -76,7 +133,7 @@ def chunk_codebase(repo_path: str):
         page_content=repo_map_str,
         metadata={"source": "repository_architecture_map.txt"}
     )
-    # Insert it at the beginning so it has high priority
+    # Insert it to the chunked_documents
     chunked_documents.insert(0, map_document)
     
     print(f"Created {len(chunked_documents)} total chunks ready for the Vector Database.")
