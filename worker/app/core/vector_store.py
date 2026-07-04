@@ -1,7 +1,7 @@
 import os
 from langchain_openai import OpenAIEmbeddings
 from langchain_qdrant import QdrantVectorStore
-from qdrant_client import QdrantClient
+from qdrant_client import QdrantClient, models
 
 def store_chunks_in_qdrant(chunks, github_url: str):
     """
@@ -41,4 +41,15 @@ def store_chunks_in_qdrant(chunks, github_url: str):
         collection_name=collection_name,
     )
     
+    # 5. Create a payload index on the github_url field so Qdrant Cloud can filter by it
+    print("Creating payload index for metadata.github_url...")
+    try:
+        client.create_payload_index(
+            collection_name=collection_name,
+            field_name="metadata.github_url",
+            field_schema=models.PayloadSchemaType.KEYWORD,
+        )
+    except Exception as e:
+        print(f"Index creation note: {e}")
+        
     print("Upload complete!")
