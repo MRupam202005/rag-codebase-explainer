@@ -11,7 +11,7 @@ The **RAG Codebase Explainer** is a full-stack, production-ready application tha
 
 ## 🚀 Features
 
-- **Automated Repository Ingestion:** Give it a GitHub URL, and the system automatically clones, parses, and splits the source code into semantic chunks.
+- **Automated Repository Ingestion:** Give it a GitHub URL, and the system automatically clones, parses, and splits the source code using **Token-Based Chunking (Tiktoken cl100k_base)** and **Multi-Language Syntax Awareness** for optimal AI context windows.
 - **Retrieval-Augmented Generation (RAG):** Uses OpenAI embeddings and a high-performance **Qdrant Vector Database** for lightning-fast semantic search.
 - **Streaming AI Responses:** Powered by FastAPI and Server-Sent Events (SSE), AI responses stream back to the user instantly, just like ChatGPT.
 - **Secure Authentication:** Complete JWT-based authentication system with HTTP-only cookies, robust password hashing, and email verification workflows.
@@ -29,6 +29,82 @@ The **RAG Codebase Explainer** is a full-stack, production-ready application tha
 2. **Node.js Orchestration:** The Express server receives the request, creates a Job ID, and pushes an ingestion task to the Redis Queue.
 3. **Python Worker Execution:** A background FastAPI worker picks up the job from Redis, clones the repo, chunks the AST (Abstract Syntax Tree), and pushes vectors to Qdrant.
 4. **Chat Interface:** Once ingested, the user asks questions. The Node.js server forwards the context to the Python LLM engine, which streams the answer back to the frontend via SSE.
+
+### 🗄️ Database Schema & Data Isolation
+The architecture strictly enforces data isolation so users only interact with repositories they explicitly ingested.
+
+```mermaid
+erDiagram
+    USER ||--o{ USER_REPO : creates
+    USER ||--o{ CHAT_MESSAGE : sends
+    REPOSITORY ||--o{ USER_REPO : maps_to
+    REPOSITORY ||--o{ QDRANT_VECTOR : embeds
+    REPOSITORY ||--o| REDIS_JOB : tracks
+    
+    USER {
+        ObjectId _id
+        string name
+        string email
+        string password
+        boolean isEmailVerified
+    }
+    
+    REPOSITORY {
+        ObjectId _id
+        string url
+        string status
+    }
+    
+    USER_REPO {
+        ObjectId _id
+        ObjectId user_id
+        ObjectId repository_id
+    }
+    
+    CHAT_MESSAGE {
+        ObjectId _id
+        ObjectId userId
+        string repositoryUrl
+        string role
+        string content
+    }
+    
+    QDRANT_VECTOR {
+        vector embeddings
+        string page_content
+        string github_url
+        string file_extension
+        string language
+        int chunk_index
+    }
+    
+    REDIS_JOB {
+        string status
+        int progress
+        string message
+    }
+```
+
+### ⚡ Dataflow Pipeline
+```mermaid
+graph TD
+    subgraph Ingestion Pipeline
+        A[Raw GitHub Repo] -->|1. Clone & Filter| B(github_loader.py)
+        B -->|2. Text Documents| C(chunker.py)
+        C -->|3. Syntax Split + Tiktoken + Metadata| D[OpenAI Embeddings]
+        D -->|4. Vectorize| E[(Qdrant DB)]
+    end
+
+    subgraph Retrieval Pipeline
+        F[User Question] -->|A. Request| G(retriever.py)
+        G -->|B. Vectorize Query| D
+        D -->|C. Return Vector| G
+        G -->|D. Similarity Search k=8| E
+        E -->|E. Top 8 Chunks| G
+        G -->|F. Inject Metadata Headers| H[OpenAI GPT-4o-mini]
+        H -->|G. SSE Stream| I[Frontend UI]
+    end
+```
 
 ---
 

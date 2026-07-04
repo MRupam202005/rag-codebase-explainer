@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # Redis remains locally on EC2 (used for temporary queueing only)
+  redis:
+    image: redis:alpine
+    container_name: rag-redis
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: always
+
+  # MongoDB and Qdrant have been moved to Cloud Services (Atlas & Qdrant Cloud)
+  # They are no longer hosted on the EC2 instance.
+
+  node-server:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: rag-node-server
+    ports:
+      - "5000:5000" # ONLY Node API is exposed to the internet
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - MONGODB_URI=${MONGODB_URI}
+      - REDIS_URL=${REDIS_URL}
+      - CORS_ORIGIN=${CORS_ORIGIN}
+      - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
+      - ACCESS_TOKEN_EXPIRY=1d
+      - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+      - REFRESH_TOKEN_EXPIRY=10d
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - PORT=5000
+      - PYTHON_WORKER_URL=${PYTHON_WORKER_URL}
+    depends_on:
+      - redis
+    restart: always
+
+  python-api:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    container_name: rag-python-api
+    environment:
+      - REDIS_URL=${REDIS_URL}
+      - QDRANT_URL=${QDRANT_URL}
+      - QDRANT_API_KEY=${QDRANT_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    command: ["uvicorn", "app.api:app", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      - redis
+    restart: always
+
+  python-worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    container_name: rag-python-worker
+    environment:
+      - REDIS_URL=${REDIS_URL}
+      - QDRANT_URL=${QDRANT_URL}
+      - QDRANT_API_KEY=${QDRANT_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    command: ["python", "app/main.py"]
+    depends_on:
+      - redis
+    restart: always
+
+volumes:
+  redis_data:

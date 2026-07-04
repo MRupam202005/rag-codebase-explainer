@@ -75,8 +75,9 @@ def chunk_codebase(repo_path: str):
     print(f"Successfully loaded {len(documents)} code files.")
 
     # SAFETY CHECK: Prevent massive repositories from draining the OpenAI API credits
-    if len(documents) > 1000:
-        raise Exception(f"Repository too large ({len(documents)} files). Maximum allowed is 1000 files to protect API credits.")
+    max_files = int(os.getenv("MAX_FILES_LIMIT", 1000))
+    if len(documents) > max_files:
+        raise Exception(f"Repository too large ({len(documents)} files). Maximum allowed is {max_files} files to protect API credits.")
 
     # Step 2: Organize and Split
     # Group documents by their programming language
