@@ -19,7 +19,7 @@ export default function Register() {
         try {
             await apiClient.post('/api/auth/register', { name, email, password });
             
-            toast.success("Registration successful! Please check your email/console to verify your account.", { duration: 6000 });
+            toast.success("Registration successful! Please check your email to verify your account.", { duration: 6000 });
             navigate('/login');
         } catch (err) {
             toast.error(err.response?.data?.message || err.message || 'Failed to register');
