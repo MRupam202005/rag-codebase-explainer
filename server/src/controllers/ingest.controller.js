@@ -64,7 +64,7 @@ export const ingestRepository = asyncHandler(async (req, res) => {
     );
 
     // 6. Push this Job to the Redis Queue for the Python Worker!
-    await redisClient.lPush("ingest_queue", JSON.stringify({ jobId, githubUrl }));
+    await redisClient.rPush("ingest_queue", JSON.stringify({ jobId, githubUrl }));
 
     // 7. Immediately return a success response with the Job ID
     return res.status(202).json(new ApiResponse(202, { jobId, status: "processing" }, "Repository submitted for processing."));

@@ -40,7 +40,7 @@ def handle_shutdown(signum, frame):
             }))
         except Exception:
             pass # Ignore redis errors during shutdown
-    sys.exit(0)
+    raise SystemExit(0)
 
 # Register signal handlers for graceful shutdown (e.g., Docker stop or Ctrl+C)
 signal.signal(signal.SIGINT, handle_shutdown)

@@ -5,7 +5,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import apiRoutes from "./routes/api.js";
-import {connectRedis} from "./config/redis.js";
+import { connectRedis } from "./config/redis.js";
 import connectDB from "./config/db.js";
 
 import path from 'path';
@@ -23,8 +23,17 @@ const PORT = process.env.PORT || 5000;
 app.use(helmet());
 
 // configuring cors (Cross-Origin Resource Sharing)
+const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:5173', 'http://127.0.0.1:5173'];
 app.use(cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: function (origin, callback) {
+        // Allow requests with no origin or matching allowed origins
+        if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+            callback(null, true);
+        } else {
+            console.warn(`Blocked CORS request from origin: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true
 }));
 
@@ -40,10 +49,10 @@ const limiter = rateLimit({
 app.use("/api", limiter); // apply to API routes only
 
 // configuring express to accept JSON data in requests
-app.use(express.json({limit: "16kb"}));
+app.use(express.json({ limit: "16kb" }));
 
 // configuring express to accept URL-encoded data in requests
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 
 // configuring express to serve static files
 app.use(express.static("public"));
@@ -77,7 +86,7 @@ startServer();
 
 app.use((err, req, res, next) => {
     console.log(`[Global Error Handler] ${err.stack || err.message || err}`);
-    
+
     // checking if the error is already an instance of ApiError (defined in utils/ApiError.js)
     const statusCode = err.statusCode || 500;
     // setting the message to be sent to the frontend
